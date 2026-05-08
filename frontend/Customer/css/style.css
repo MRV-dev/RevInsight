@@ -74,6 +74,8 @@ h1{
   text-align: center; 
   height: 100vh;
   width: 75%; 
+  transition: transform 0.9s ease; 
+  z-index: 10;
 }
 
 
@@ -87,6 +89,11 @@ main{
   font-family: sans-serif;
   width: 40%;
   padding: 40px;
+  overflow-y: auto;     
+  overflow-x: hidden;
+  max-height: 89.2vh; 
+  transition: transform 0.9s ease;  
+  z-index: 5;
 }
 main p{
   color: #929191;
@@ -101,17 +108,27 @@ main h2{
 }
 
 
+body.register-active main {
+  transform: translateX(-160%);  
+}
+
+body.register-active .header {
+  transform: translateX(61.77%);   
+  transition: transform 0.9s ease; 
+}
 
 
 .auth-btn {
   display: flex;
   gap: 10px;
-  margin-bottom: 30px;
+  margin-bottom:  0px;
+  margin-top: 10px;
   width: 100%;
   background-color: #efe7e7;
-  border-radius: 8px;
+  border-radius: 11px;
   padding: 3px;
   position: relative;
+  
 }
 
 .auth-btn button {
@@ -120,7 +137,7 @@ main h2{
   font-size: 16px;
   font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: 11px;
   cursor: pointer;
   background-color: transparent;
   color: #666;
@@ -142,7 +159,7 @@ main h2{
   width: 48%;
   height: calc(100% - 6px);
   background-color: rgb(234, 86, 1);
-  border-radius: 6px;
+   border-radius: 11px;
   z-index: 0;
   transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -176,7 +193,7 @@ form input:focus{
 }
 
 .Login-btn{
-  padding: 14px 20px;
+  padding: 14px 223px;
   font-size: 16px;
   font-weight: 600;
   background-color: rgb(234, 86, 1);
@@ -189,4 +206,35 @@ form input:focus{
 }
 .Login-btn:hover{
   background-color: rgb(220, 75, 0);
+}
+
+/* Register Form Styles */
+
+.register-form {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  line-height: 10px;
+}
+.register-form h2 {
+  margin-top: 70px;
+  font-size: 30px;
+}
+.register-form .Login-btn{
+  padding: 14px 180px;
+}
+
+.sign-in-form {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+body.form-ready .sign-in-form {
+  opacity: 0;
+  display: none;
+}
+
+body.form-ready .register-form {
+  display: block;
+  opacity: 1;
 }
