@@ -33,6 +33,18 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Phone number is required']
   },
 
+  // OTP Verification
+  otp: {
+    code: {
+      type: String,
+      default: null
+    },
+    expiresAt: {
+      type: Date,
+      default: null
+    }
+  },
+
   // Account Status
   isEmailVerified: {
     type: Boolean,
@@ -99,6 +111,4 @@ const userSchema = new mongoose.Schema({
 // Index for faster queries
 userSchema.index({ lastPurchaseDate: 1 });
 
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);

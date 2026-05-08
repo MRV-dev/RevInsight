@@ -1,0 +1,81 @@
+const nodemailer = require('nodemailer');
+
+// Create email transporter
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
+  }
+});
+
+// Generate random 6-digit OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// Calculate expiry time (2 minutes from now)
+const getOTPExpiry = () => {
+  return new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
+};
+
+// Send OTP via email
+const sendOTPEmail = async (email, otp) => {
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'RevInsight - Email Verification OTP',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Welcome to RevInsight!</h2>
+          <p style="color: #666; font-size: 16px;">Your OTP for email verification is:</p>
+          <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <h1 style="color: #007bff; font-size: 48px; font-weight: bold; letter-spacing: 10px; margin: 0;">${otp}</h1>
+          </div>
+          <p style="color: #e74c3c; font-weight: bold;">⏱️ This OTP will expire in 2 minutes.</p>
+          <p style="color: #666;">If you didn't request this, please ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+          <p style="color: #999; font-size: 12px;">RevInsight © 2026. All rights reserved.</p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    throw new Error('Failed to send OTP email');
+  }
+};
+
+// Verify OTP
+const verifyOTP = (storedOTP, providedOTP, expiresAt) => {
+  // Check if OTP has expired
+  if (new Date() > expiresAt) {
+    return {
+      isValid: false,
+      message: 'OTP has expired. Please request a new one.'
+    };
+  }
+
+  // Check if OTP matches
+  if (storedOTP !== providedOTP) {
+    return {
+      isValid: false,
+      message: 'Invalid OTP. Please try again.'
+    };
+  }
+
+  return {
+    isValid: true,
+    message: 'OTP verified successfully'
+  };
+};
+
+module.exports = {
+  generateOTP,
+  getOTPExpiry,
+  sendOTPEmail,
+  verifyOTP
+};
