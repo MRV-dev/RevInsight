@@ -1,0 +1,510 @@
+// Sample data for demonstration
+const sampleData = {
+    transactions: [
+        {
+            id: '0011',
+            date: '2026-03-23',
+            customer: 'Ariel',
+            items: 'Caban (Black)\nBrake Pads (Set)',
+            amount: 280,
+            status: 'Paid',
+            mechanic: 'Edison'
+        },
+        {
+            id: '0057',
+            date: '2026-03-23',
+            customer: 'Rin',
+            items: 'PIAA Horn\nUnderglow LED Kit',
+            amount: 750,
+            status: 'Paid',
+            mechanic: 'Dhie Jhay'
+        },
+        {
+            id: '0015',
+            date: '2026-03-23',
+            customer: 'Arjay',
+            items: 'Lamented (Tribal Blue)',
+            amount: 300,
+            status: 'Paid',
+            mechanic: 'Edison'
+        },
+        {
+            id: '0058',
+            date: '2026-03-23',
+            customer: 'Kim',
+            items: 'CVT Cleaner\nSlider Piece\nCenter Spring',
+            amount: 980,
+            status: 'Paid',
+            mechanic: 'Dhie Jhay'
+        },
+        {
+            id: '0023',
+            date: '2026-03-22',
+            customer: 'Mark',
+            items: 'Engine Oil (1L)\nOil Filter',
+            amount: 450,
+            status: 'Paid',
+            mechanic: 'Edison'
+        },
+        {
+            id: '0034',
+            date: '2026-03-22',
+            customer: 'Lisa',
+            items: 'Brake Disc (Front)',
+            amount: 1200,
+            status: 'Paid',
+            mechanic: 'Dhie Jhay'
+        },
+        {
+            id: '0045',
+            date: '2026-03-21',
+            customer: 'Carlos',
+            items: 'Chain Lube\nSprocket Set',
+            amount: 650,
+            status: 'Paid',
+            mechanic: 'Edison'
+        },
+        {
+            id: '0062',
+            date: '2026-03-20',
+            customer: 'Ana',
+            items: 'LED Headlight',
+            amount: 890,
+            status: 'Paid',
+            mechanic: 'Dhie Jhay'
+        }
+    ],
+    inventory: [
+        { id: '0011', name: 'Caban (Black)', price: 280, stock: 15 },
+        { id: '0057', name: 'PIAA Horn', price: 700, stock: 8 },
+        { id: '0015', name: 'Lamented (Tribal Blue)', price: 300, stock: 22 },
+        { id: '0058', name: 'CVT Cleaner', price: 180, stock: 3 },
+        { id: '0023', name: 'Engine Oil (1L)', price: 450, stock: 20 },
+        { id: '0024', name: 'Oil Filter', price: 120, stock: 18 },
+        { id: '0034', name: 'Brake Disc (Front)', price: 1200, stock: 5 },
+        { id: '0035', name: 'Brake Pads (Set)', price: 280, stock: 12 },
+        { id: '0045', name: 'Chain Lube', price: 180, stock: 25 },
+        { id: '0046', name: 'Sprocket Set', price: 650, stock: 7 },
+        { id: '0056', name: 'Slider Piece', price: 420, stock: 9 },
+        { id: '0057', name: 'Center Spring', price: 380, stock: 14 },
+        { id: '0061', name: 'Underglow LED Kit', price: 750, stock: 4 },
+        { id: '0062', name: 'LED Headlight', price: 890, stock: 6 },
+        { id: '0063', name: 'LED Tail Light', price: 720, stock: 11 }
+    ],
+    mechanics: [
+        {
+            id: 1,
+            name: 'Edison',
+            specialty: 'Engine & Brakes',
+            email: 'edison@mmps.com',
+            avatar: 'E',
+            avatarColor: 'orange',
+            totalJobs: 4,
+            completedJobs: 4,
+            inProgress: 0,
+            pending: 0,
+            laborToday: 0
+        },
+        {
+            id: 2,
+            name: 'Dhie Jhay',
+            specialty: 'Electrical & CVT',
+            email: 'dhiejhay@mmps.com',
+            avatar: 'DJ',
+            avatarColor: 'purple',
+            totalJobs: 4,
+            completedJobs: 4,
+            inProgress: 0,
+            pending: 0,
+            laborToday: 0
+        }
+    ],
+    users: [
+        { id: 'U001', name: 'Ariel', email: 'ariel@email.com', phone: '09123456789', joinedDate: '2026-01-15' },
+        { id: 'U002', name: 'Rin', email: 'rin@email.com', phone: '09234567890', joinedDate: '2026-02-10' },
+        { id: 'U003', name: 'Arjay', email: 'arjay@email.com', phone: '09345678901', joinedDate: '2026-02-20' },
+        { id: 'U004', name: 'Kim', email: 'kim@email.com', phone: '09456789012', joinedDate: '2026-03-01' },
+        { id: 'U005', name: 'Mark', email: 'mark@email.com', phone: '09567890123', joinedDate: '2026-03-05' },
+        { id: 'U006', name: 'Lisa', email: 'lisa@email.com', phone: '09678901234', joinedDate: '2026-03-10' },
+        { id: 'U007', name: 'Carlos', email: 'carlos@email.com', phone: '09789012345', joinedDate: '2026-03-12' },
+        { id: 'U008', name: 'Ana', email: 'ana@email.com', phone: '09890123456', joinedDate: '2026-03-18' }
+    ]
+};
+
+// Chart instances
+let quarterlySalesChart, dailySalesChart, projectedRevenueChart;
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function () {
+    initializeCharts();
+    populateTransactionsTable();
+    populateInventoryTable();
+    populateMechanicsSection();
+    populateUsersTable();
+    setupNavigation();
+    updateTimestamp();
+    setInterval(updateTimestamp, 60000);
+});
+
+// Update timestamp
+function updateTimestamp() {
+    const now = new Date();
+    const options = { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    document.getElementById('timestamp').textContent = now.toLocaleDateString('en-US', options) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+// Initialize charts
+function initializeCharts() {
+    // Quarterly Sales Chart
+    const quarterlySalesCtx = document.getElementById('quarterlySalesChart').getContext('2d');
+    quarterlySalesChart = new Chart(quarterlySalesCtx, {
+        type: 'line',
+        data: {
+            labels: ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026', 'Q2 2026'],
+            datasets: [{
+                label: 'Revenue',
+                data: [75, 20, 30, 25, 5, 10],
+                borderColor: '#ff6b35',
+                backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                borderWidth: 3,
+                pointRadius: 5,
+                pointBackgroundColor: '#ff6b35',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: function (value) { return value; } }
+                }
+            }
+        }
+    });
+
+    // Daily Sales Chart
+    const dailySalesCtx = document.getElementById('dailySalesChart').getContext('2d');
+    dailySalesChart = new Chart(dailySalesCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [
+                {
+                    label: 'Brake Parts',
+                    data: [150, 120, 145, 130, 160, 200, 180],
+                    borderColor: '#ff6b35',
+                    backgroundColor: 'rgba(255, 107, 53, 0.05)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.4
+                },
+                {
+                    label: 'Accessories',
+                    data: [140, 110, 130, 125, 150, 180, 170],
+                    borderColor: '#4a90e2',
+                    backgroundColor: 'rgba(74, 144, 226, 0.05)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.4
+                },
+                {
+                    label: 'Engine Parts',
+                    data: [100, 90, 110, 105, 120, 140, 130],
+                    borderColor: '#52c77a',
+                    backgroundColor: 'rgba(82, 199, 122, 0.05)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.4
+                },
+                {
+                    label: 'Other',
+                    data: [50, 40, 50, 45, 60, 70, 65],
+                    borderColor: '#9b6dd0',
+                    backgroundColor: 'rgba(155, 109, 208, 0.05)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    // Projected Revenue Chart
+    const projectedRevenueCtx = document.getElementById('projectedRevenueChart').getContext('2d');
+    projectedRevenueChart = new Chart(projectedRevenueCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Q1 2024', 'Q2 2025', 'Q1 2026'],
+            datasets: [{
+                label: 'Projected Revenue',
+                data: [950, 1100, 750],
+                backgroundColor: '#ff6b35',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { callback: function (value) { return '₱' + value + 'k'; } } }
+            }
+        }
+    });
+}
+
+// Populate Transactions Table
+function populateTransactionsTable() {
+    const tbody = document.getElementById('transactionsTableBody');
+    tbody.innerHTML = '';
+
+    sampleData.transactions.forEach(transaction => {
+        const statusClass = `status-${transaction.status.toLowerCase()}`;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><a href="#" style="color: #4a90e2; text-decoration: none;">${transaction.id}</a></td>
+            <td>${transaction.date}</td>
+            <td><strong>${transaction.customer}</strong></td>
+            <td>${transaction.items.replace(/\n/g, '<br>')}</td>
+            <td class="price-text">₱${transaction.amount}</td>
+            <td><span class="status-badge ${statusClass}">${transaction.status}</span></td>
+            <td>${transaction.mechanic}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-small btn-edit" title="Edit">✏️</button>
+                    <button class="btn-small btn-delete" title="Delete">🗑️</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Populate Inventory Table
+function populateInventoryTable() {
+    const tbody = document.getElementById('inventoryTableBody');
+    tbody.innerHTML = '';
+
+    sampleData.inventory.forEach(item => {
+        const stockClass = item.stock <= 5 ? 'low' : '';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><a href="#" style="color: #4a90e2; text-decoration: none;">${item.id}</a></td>
+            <td>${item.name}</td>
+            <td class="price-text">₱${item.price}</td>
+            <td class="stock-text ${stockClass}">${item.stock} units</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-small btn-edit" title="Edit">✏️</button>
+                    <button class="btn-small btn-delete" title="Delete">🗑️</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Populate Mechanics Section
+function populateMechanicsSection() {
+    const container = document.getElementById('mechanicsList');
+    container.innerHTML = '';
+
+    sampleData.mechanics.forEach(mechanic => {
+        const card = document.createElement('div');
+        card.className = 'mechanic-card';
+        card.innerHTML = `
+            <div class="mechanic-header-row">
+                <div class="mechanic-info">
+                    <div class="mechanic-avatar ${mechanic.avatarColor}">${mechanic.avatar}</div>
+                    <div>
+                        <div class="mechanic-name">${mechanic.name}</div>
+                        <div class="mechanic-specialty" style="color: #ff6b35;">${mechanic.specialty}</div>
+                        <div class="mechanic-email">📧 ${mechanic.email}</div>
+                    </div>
+                </div>
+                <div class="mechanic-actions">
+                    <button class="btn-small btn-edit" title="Edit">✏️</button>
+                    <button class="btn-small btn-delete" title="Delete">🗑️</button>
+                </div>
+            </div>
+            <div class="mechanic-stats">
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.totalJobs}</div>
+                    <div class="mechanic-stat-label">Total Jobs</div>
+                </div>
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.completedJobs}</div>
+                    <div class="mechanic-stat-label">Completed</div>
+                </div>
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.inProgress}</div>
+                    <div class="mechanic-stat-label">In Progress</div>
+                </div>
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.pending}</div>
+                    <div class="mechanic-stat-label">Pending</div>
+                </div>
+            </div>
+            <div class="mechanic-labor">⭐ Total Labor Today <span style="float: right;">₱${mechanic.laborToday}</span></div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Populate Users Table
+function populateUsersTable() {
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '';
+
+    sampleData.users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><a href="#" style="color: #4a90e2; text-decoration: none;">${user.id}</a></td>
+            <td><strong>${user.name}</strong></td>
+            <td>${user.email}</td>
+            <td>${user.phone}</td>
+            <td>${user.joinedDate}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-small btn-edit" title="Edit">✏️</button>
+                    <button class="btn-small btn-delete" title="Delete">🗑️</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Setup Navigation
+function setupNavigation() {
+    const navItems = document.querySelectorAll('.nav-item:not(.logout)');
+    const sections = document.querySelectorAll('.section-content');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+            const sectionId = this.getAttribute('data-section');
+
+            // Remove active class from all items and sections
+            navItems.forEach(nav => nav.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+
+            // Add active class to clicked item and corresponding section
+            this.classList.add('active');
+            document.getElementById(sectionId).classList.add('active');
+
+            // Redraw charts if they're visible
+            setTimeout(() => {
+                if (sectionId === 'dashboard') {
+                    quarterlySalesChart.resize();
+                    dailySalesChart.resize();
+                } else if (sectionId === 'analytics') {
+                    projectedRevenueChart.resize();
+                }
+            }, 100);
+        });
+    });
+}
+
+// Event listeners for buttons
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('btn-edit')) {
+        alert('Edit functionality would be implemented here');
+    } else if (e.target.classList.contains('btn-delete')) {
+        if (confirm('Are you sure you want to delete this item?')) {
+            e.target.closest('tr') && e.target.closest('tr').remove();
+        }
+    } else if (e.target.classList.contains('btn-primary')) {
+        const section = e.target.closest('.section-content');
+        if (section && section.id === 'inventory') {
+            alert('Add new inventory item functionality would be implemented here');
+        } else if (section && section.id === 'mechanics') {
+            alert('Add new mechanic functionality would be implemented here');
+        } else if (section && section.id === 'products') {
+            alert('Add new product functionality would be implemented here');
+        }
+    }
+});
+
+// Filter functionality for transactions
+document.getElementById('filterDropdown')?.addEventListener('change', function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#transactionsTableBody tr');
+
+    rows.forEach(row => {
+        if (filter === 'all') {
+            row.style.display = '';
+        } else {
+            const statusCell = row.querySelector('.status-badge');
+            if (statusCell.textContent.toLowerCase() === filter) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    });
+});
+
+// Search functionality for transactions
+document.querySelector('.search-filter input')?.addEventListener('input', function (e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#transactionsTableBody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Search functionality for users
+document.querySelector('.users-header input')?.addEventListener('input', function (e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#usersTableBody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+// Search functionality for inventory
+document.querySelector('.inventory-header input')?.addEventListener('input', function (e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#inventoryTableBody tr');
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
