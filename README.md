@@ -5,84 +5,115 @@
 - Member B: De Roxas
 
 ### Member A
+- Frontend Development
 - Backend Development
-- Revenue Analytics
+- Database Integration
 - OpenAI Integration
 
 ### Member B
-- Frontend Development
-- Database Management
 - Documentation
+- Research Materials
+- Diagrams and Reports
 
 ---
 
 ## Weekly Tasks
 
 ### Week 1
+
 #### Member A
-- Set up Node.js and Express.js
-- Create project structure
+- Set up GitHub repository
+- Set up React, Node.js, Express.js, and MongoDB
+- Create project folder structure
 
 #### Member B
-- Design UI wireframes
-- Create MongoDB database schema
+- Review manuscript requirements
+- Organize references and related literature
+- Prepare project documentation
+
+---
 
 ### Week 2
+
 #### Member A
-- Develop Login and Authentication API
-- Implement User Role Management
+- Develop Login and Registration pages
+- Implement Authentication and User Roles
 
 #### Member B
-- Create Login Page
-- Create Registration Form
+- Create Use Case Diagram
+- Create Context Diagram
+- Update documentation progress
+
+---
 
 ### Week 3
+
 #### Member A
-- Develop Product and Service CRUD APIs
-- Connect database collections
+- Develop Product and Service Management Module
+- Connect MongoDB database
 
 #### Member B
-- Create Product Management Page
-- Create Service Management Page
+- Create System Architecture Diagram
+- Create Database Documentation
+
+---
 
 ### Week 4
+
 #### Member A
-- Develop Transaction and POS Module
-- Store transaction records
+- Develop POS and Transaction Module
+- Implement CRUD operations
 
 #### Member B
-- Create POS Interface
-- Create Transaction History Page
+- Document system modules
+- Update implementation procedures
+
+---
 
 ### Week 5
+
 #### Member A
-- Implement Revenue Concentration Analysis
-- Calculate top revenue contributors
+- Develop Dashboard Module
+- Implement Revenue Analytics and Charts
 
 #### Member B
-- Create Dashboard Charts
-- Display analytics results
+- Document analytics process
+- Prepare screenshots and module descriptions
+
+---
 
 ### Week 6
+
 #### Member A
 - Integrate OpenAI API
-- Generate business insight summaries
+- Generate AI Business Insight Summaries
 
 #### Member B
-- Create AI Insights Page
-- Display AI-generated recommendations
+- Document AI Integration Process
+- Update technical documentation
+
+---
 
 ### Week 7
+
 #### Member A
-- Backend Testing
-- Fix system bugs
+- Conduct System Testing
+- Fix Bugs and Optimize Performance
 
 #### Member B
-- Frontend Testing
-- Update documentation
+- Prepare Testing Documents
+- Prepare User Manual
+
+---
 
 ### Week 8
-#### Both Members
-- System Integration Testing
-- Final Documentation
+
+#### Member A
+- Deploy the System
+- Final System Revisions
+
+#### Member B
+- Finalize Manuscript
+- Prepare Presentation Materials
+- Compile Project Documentation
 - Deployment Preparation
