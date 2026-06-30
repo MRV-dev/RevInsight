@@ -116,29 +116,12 @@ function displayParts(parts) {
     noResults.style.display = 'none';
     
     tbody.innerHTML = parts.map(part => {
-        const categoryClass = `badge-${part.category.toLowerCase().replace(' ', '-')}`;
-        let stockStatus = 'stock-in';
-        let stockText = `${part.stock} in stock`;
-        
-        if (part.stock === 0) {
-            stockStatus = 'stock-out';
-            stockText = 'Out of stock';
-        } else if (part.stock <= 5) {
-            stockStatus = 'stock-low';
-            stockText = `Low: ${part.stock}`;
-        }
-        
         return `
             <tr>
                 <td><span class="part-id">${part.itemId}</span></td>
                 <td><span class="part-name">${part.name}</span></td>
-                <td><span class="category-badge ${categoryClass}">${part.category}</span></td>
-                <td>${part.description || '-'}</td>
                 <td>
-                    <div class="stock-status">
-                        <span class="stock-indicator ${stockStatus}"></span>
-                        <span class="stock-text">${stockText}</span>
-                    </div>
+                    <span class="quantity">${part.stock}</span>
                 </td>
             </tr>
         `;
