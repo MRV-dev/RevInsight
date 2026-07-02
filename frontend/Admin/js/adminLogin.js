@@ -26,36 +26,34 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Logging in...';
 
-        // Simulate API call (in real app, send to backend)
-        setTimeout(() => {
-            // Demo credentials
-            const validEmails = ['admin@mmps.com', 'admin@email.com'];
-            const validPassword = 'admin123';
+        // Call backend API
+        fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: email, password })
+        })
+        .then(async res => {
+            const body = await res.json();
+            if (!res.ok) throw new Error(body.message || 'Login failed');
 
-            if (validEmails.includes(email.toLowerCase()) && password === validPassword) {
-                // Store credentials if remember me is checked
-                if (rememberMe) {
-                    localStorage.setItem('rememberEmail', email);
-                } else {
-                    localStorage.removeItem('rememberEmail');
-                }
-
-                // Set authentication token
-                localStorage.setItem('adminToken', 'token_' + Date.now());
-                localStorage.setItem('adminEmail', email);
-
-                showSuccess('Login successful! Redirecting...');
-
-                // Redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = 'adminDashboard.html';
-                }, 1500);
+            // Save admin token and email
+            if (rememberMe) {
+                localStorage.setItem('rememberEmail', email);
             } else {
-                showError('Invalid email or password');
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+                localStorage.removeItem('rememberEmail');
             }
-        }, 1500);
+
+            localStorage.setItem('adminToken', body.token);
+            localStorage.setItem('adminEmail', body.admin?.username || email);
+
+            showSuccess('Login successful! Redirecting...');
+            setTimeout(() => { window.location.href = 'adminDashboard.html'; }, 800);
+        })
+        .catch(err => {
+            showError(err.message || 'Invalid email or password');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        });
     });
 
     // Load remembered email

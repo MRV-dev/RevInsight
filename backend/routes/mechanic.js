@@ -12,6 +12,9 @@ const {
 // Admin creates mechanic account
 router.post('/create', adminOnly, validateCreateMechanic, mechanicController.createMechanic);
 
+// Protected list for admin dashboard (frontend) to show persisted mechanics
+router.get('/all', adminOnly, mechanicController.listAllMechanics);
+
 // Mechanic login (public)
 router.post('/login', validateLogin, mechanicController.login);
 

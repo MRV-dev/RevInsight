@@ -328,46 +328,79 @@ function populateMechanicsSection() {
     const container = document.getElementById('mechanicsList');
     container.innerHTML = '';
 
-    sampleData.mechanics.forEach(mechanic => {
-        const card = document.createElement('div');
-        card.className = 'mechanic-card';
-        card.innerHTML = `
-            <div class="mechanic-header-row">
-                <div class="mechanic-info">
-                    <div class="mechanic-avatar ${mechanic.avatarColor}">${mechanic.avatar}</div>
-                    <div>
-                        <div class="mechanic-name">${mechanic.name}</div>
-                        <div class="mechanic-specialty" style="color: #ff6b35;">${mechanic.specialty}</div>
-                        <div class="mechanic-email">📧 ${mechanic.email}</div>
+    // Fetch mechanics from backend (requires admin JWT)
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+        // Not authenticated — redirect to login
+        window.location.href = 'adminLogin.html';
+        return;
+    }
+
+    fetch('/api/mechanics/all', {
+        headers: { 'Authorization': 'Bearer ' + adminToken }
+    })
+        .then(res => {
+            if (res.status === 401 || res.status === 403) {
+                // Token invalid or expired — clear and redirect to login
+                localStorage.removeItem('adminToken');
+                window.location.href = 'adminLogin.html';
+                throw new Error('Unauthorized');
+            }
+            return res.json();
+        })
+        .then(data => {
+            const mechanics = data.mechanics || [];
+            if (mechanics.length === 0) {
+                container.innerHTML = '<p>No mechanics found.</p>';
+                return;
+            }
+
+            mechanics.forEach(mechanic => {
+                const card = document.createElement('div');
+                card.className = 'mechanic-card';
+                const fullName = (mechanic.firstName || '') + ' ' + (mechanic.lastName || '');
+                card.innerHTML = `
+                    <div class="mechanic-header-row">
+                        <div class="mechanic-info">
+                            <div class="mechanic-avatar orange">${(mechanic.firstName||'')[0] || 'M'}</div>
+                            <div>
+                                <div class="mechanic-name">${fullName.trim()}</div>
+                                <div class="mechanic-specialty" style="color: #ff6b35;">${mechanic.specialization}</div>
+                                <div class="mechanic-email">📧 ${mechanic.email}</div>
+                            </div>
+                        </div>
+                        <div class="mechanic-actions">
+                            <button class="btn-small btn-edit" title="Edit">✏️</button>
+                            <button class="btn-small btn-delete" title="Delete">🗑️</button>
+                        </div>
                     </div>
-                </div>
-                <div class="mechanic-actions">
-                    <button class="btn-small btn-edit" title="Edit">✏️</button>
-                    <button class="btn-small btn-delete" title="Delete">🗑️</button>
-                </div>
-            </div>
-            <div class="mechanic-stats">
-                <div class="mechanic-stat">
-                    <div class="mechanic-stat-number">${mechanic.totalJobs}</div>
-                    <div class="mechanic-stat-label">Total Jobs</div>
-                </div>
-                <div class="mechanic-stat">
-                    <div class="mechanic-stat-number">${mechanic.completedJobs}</div>
-                    <div class="mechanic-stat-label">Completed</div>
-                </div>
-                <div class="mechanic-stat">
-                    <div class="mechanic-stat-number">${mechanic.inProgress}</div>
-                    <div class="mechanic-stat-label">In Progress</div>
-                </div>
-                <div class="mechanic-stat">
-                    <div class="mechanic-stat-number">${mechanic.pending}</div>
-                    <div class="mechanic-stat-label">Pending</div>
-                </div>
-            </div>
-            <div class="mechanic-labor">⭐ Total Labor Today <span style="float: right;">₱${mechanic.laborToday}</span></div>
-        `;
-        container.appendChild(card);
-    });
+                    <div class="mechanic-stats">
+                        <div class="mechanic-stat">
+                            <div class="mechanic-stat-number">${mechanic.totalRepairs || 0}</div>
+                            <div class="mechanic-stat-label">Total Jobs</div>
+                        </div>
+                        <div class="mechanic-stat">
+                            <div class="mechanic-stat-number">${mechanic.averageRating || 0}</div>
+                            <div class="mechanic-stat-label">Average Rating</div>
+                        </div>
+                        <div class="mechanic-stat">
+                            <div class="mechanic-stat-number">${mechanic.isActive ? 0 : 0}</div>
+                            <div class="mechanic-stat-label">In Progress</div>
+                        </div>
+                        <div class="mechanic-stat">
+                            <div class="mechanic-stat-number">0</div>
+                            <div class="mechanic-stat-label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="mechanic-labor">⭐ Total Labor Today <span style="float: right;">₱0</span></div>
+                `;
+                container.appendChild(card);
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching mechanics:', err);
+            container.innerHTML = '<p>Unable to load mechanics.</p>';
+        });
 }
 
 // Populate Users Table

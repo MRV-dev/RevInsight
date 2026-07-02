@@ -146,9 +146,33 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// Public: list all mechanics (used by admin dashboard frontend to show persistent mechanics)
+const listAllMechanics = async (req, res) => {
+  try {
+    const mechanics = await Mechanic.find().select('firstName lastName email specialization totalRepairs averageRating isActive createdBy');
+
+    const formatted = mechanics.map(m => ({
+      id: m._id,
+      firstName: m.firstName,
+      lastName: m.lastName,
+      email: m.email,
+      specialization: m.specialization,
+      totalRepairs: m.totalRepairs || 0,
+      averageRating: m.averageRating || 0,
+      isActive: m.isActive,
+      createdBy: m.createdBy
+    }));
+
+    res.status(200).json({ mechanics: formatted });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createMechanic,
   login,
   getProfile,
-  updateProfile
+  updateProfile,
+  listAllMechanics
 };
