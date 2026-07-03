@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechanics - Admin</title>
+    <link rel="stylesheet" href="css/adminDashboard.css">
+</head>
+<body data-page="mechanics">
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="logo"><div class="logo-circle">M</div></div>
+            <nav class="nav-menu">
+                <a href="adminDashboard.html" class="nav-item">📊</a>
+                <a href="revenue.html" class="nav-item">📈</a>
+                <a href="transactions.html" class="nav-item">📋</a>
+                <a href="inventory.html" class="nav-item">📦</a>
+                <a href="mechanics.html" class="nav-item active">🔧</a>
+                <a href="adminLogin.html" class="nav-item logout" title="Logout">🚪</a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="admin-header">
+                <div class="header-brand">
+                    <h1>MECHANICS</h1>
+                    <p>Mancy's Motorcycle Parts, Accessories & Services</p>
+                </div>
+                <div class="header-right">
+                    <div class="timestamp" id="timestamp">06/22/2026 06:33 PM</div>
+                    <div class="notification-icon">🔔</div>
+                </div>
+            </header>
+            <section class="section-content active">
+                <div class="mechanics-container">
+                    <div class="mechanics-header">
+                        <h2>MECHANICS</h2>
+                        <button class="btn-primary">+ Add Mechanic</button>
+                    </div>
+                    <div class="mechanics-stats">
+                        <div class="stat-box">
+                            <div class="stat-number">2</div>
+                            <div class="stat-label">Total Mechanics</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Total Jobs</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Completed Jobs</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">₱0</div>
+                            <div class="stat-label">Total Labor Today</div>
+                        </div>
+                    </div>
+                    <div class="mechanics-list" id="mechanicsList"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="js/adminDashboard.js"></script>
+</body>
+</html>

@@ -15,11 +15,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (!isValidEmail(email)) {
-            showError('Please enter a valid email address');
-            return;
-        }
-
         // Disable button during submission
         const submitBtn = loginForm.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
@@ -70,9 +65,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Admin username can be a simple string, not necessarily an email address.
 function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return true;
 }
 
 function showError(message) {

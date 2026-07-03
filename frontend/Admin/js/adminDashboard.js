@@ -89,7 +89,14 @@ const sampleData = {
         { id: '0057', name: 'Center Spring', price: 380, stock: 14 },
         { id: '0061', name: 'Underglow LED Kit', price: 750, stock: 4 },
         { id: '0062', name: 'LED Headlight', price: 890, stock: 6 },
-        { id: '0063', name: 'LED Tail Light', price: 720, stock: 11 }
+        { id: '0063', name: 'LED Tail Light', price: 720, stock: 11 },
+        { id: '0064', name: 'Riding Gloves', price: 620, stock: 14 },
+        { id: '0065', name: 'Motorcycle Helmet', price: 1950, stock: 6 },
+        { id: '0066', name: 'Disc Rotor (Rear)', price: 980, stock: 5 },
+        { id: '0067', name: 'Air Filter', price: 210, stock: 18 },
+        { id: '0068', name: 'Spark Plug Set', price: 340, stock: 13 },
+        { id: '0069', name: 'Bike Cover', price: 540, stock: 10 },
+        { id: '0070', name: 'Fuel Line Kit', price: 420, stock: 8 }
     ],
     mechanics: [
         {
@@ -134,16 +141,41 @@ const sampleData = {
 // Chart instances
 let quarterlySalesChart, dailySalesChart, projectedRevenueChart;
 
-// Initialize dashboard
+// Inventory pagination state
+const inventoryPageSize = 8;
+let currentInventoryPage = 1;
+let inventorySearchTerm = '';
+
+// Initialize dashboard or section page
 document.addEventListener('DOMContentLoaded', function () {
-    initializeCharts();
-    populateTransactionsTable();
-    populateInventoryTable();
-    populateMechanicsSection();
-    populateUsersTable();
-    setupNavigation();
-    updateTimestamp();
-    setInterval(updateTimestamp, 60000);
+    const page = document.body.dataset.page || 'dashboard';
+
+    if (page === 'dashboard') {
+        initializeCharts();
+        populateTransactionsTable();
+        populateInventoryTable();
+        populateMechanicsSection();
+        populateUsersTable();
+        setupNavigation();
+        updateTimestamp();
+        setInterval(updateTimestamp, 60000);
+    } else if (page === 'revenue') {
+        initializeCharts();
+        setupNavigation();
+        updateTimestamp();
+        setInterval(updateTimestamp, 60000);
+    } else if (page === 'transactions') {
+        populateTransactionsTable();
+        setupNavigation();
+    } else if (page === 'inventory') {
+        populateInventoryTable();
+        setupNavigation();
+    } else if (page === 'mechanics') {
+        populateMechanicsSection();
+        setupNavigation();
+    } else {
+        setupNavigation();
+    }
 });
 
 // Update timestamp
@@ -156,125 +188,134 @@ function updateTimestamp() {
 // Initialize charts
 function initializeCharts() {
     // Quarterly Sales Chart
-    const quarterlySalesCtx = document.getElementById('quarterlySalesChart').getContext('2d');
-    quarterlySalesChart = new Chart(quarterlySalesCtx, {
-        type: 'line',
-        data: {
-            labels: ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026', 'Q2 2026'],
-            datasets: [{
-                label: 'Revenue',
-                data: [75, 20, 30, 25, 5, 10],
-                borderColor: '#ff6b35',
-                backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                borderWidth: 3,
-                pointRadius: 5,
-                pointBackgroundColor: '#ff6b35',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: false }
+    const quarterlySalesCanvas = document.getElementById('quarterlySalesChart');
+    if (quarterlySalesCanvas) {
+        const quarterlySalesCtx = quarterlySalesCanvas.getContext('2d');
+        quarterlySalesChart = new Chart(quarterlySalesCtx, {
+            type: 'line',
+            data: {
+                labels: ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', 'Q1 2026', 'Q2 2026'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [75, 20, 30, 25, 5, 10],
+                    borderColor: '#ff6b35',
+                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#ff6b35',
+                    tension: 0.4,
+                    fill: true
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: { callback: function (value) { return value; } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: function (value) { return value; } }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
     // Daily Sales Chart
-    const dailySalesCtx = document.getElementById('dailySalesChart').getContext('2d');
-    dailySalesChart = new Chart(dailySalesCtx, {
-        type: 'line',
-        data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [
-                {
-                    label: 'Brake Parts',
-                    data: [150, 120, 145, 130, 160, 200, 180],
-                    borderColor: '#ff6b35',
-                    backgroundColor: 'rgba(255, 107, 53, 0.05)',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    tension: 0.4
+    const dailySalesCanvas = document.getElementById('dailySalesChart');
+    if (dailySalesCanvas) {
+        const dailySalesCtx = dailySalesCanvas.getContext('2d');
+        dailySalesChart = new Chart(dailySalesCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [
+                    {
+                        label: 'Brake Parts',
+                        data: [150, 120, 145, 130, 160, 200, 180],
+                        borderColor: '#ff6b35',
+                        backgroundColor: 'rgba(255, 107, 53, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Accessories',
+                        data: [140, 110, 130, 125, 150, 180, 170],
+                        borderColor: '#4a90e2',
+                        backgroundColor: 'rgba(74, 144, 226, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Engine Parts',
+                        data: [100, 90, 110, 105, 120, 140, 130],
+                        borderColor: '#52c77a',
+                        backgroundColor: 'rgba(82, 199, 122, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Other',
+                        data: [50, 40, 50, 45, 60, 70, 65],
+                        borderColor: '#9b6dd0',
+                        backgroundColor: 'rgba(155, 109, 208, 0.05)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
                 },
-                {
-                    label: 'Accessories',
-                    data: [140, 110, 130, 125, 150, 180, 170],
-                    borderColor: '#4a90e2',
-                    backgroundColor: 'rgba(74, 144, 226, 0.05)',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    tension: 0.4
-                },
-                {
-                    label: 'Engine Parts',
-                    data: [100, 90, 110, 105, 120, 140, 130],
-                    borderColor: '#52c77a',
-                    backgroundColor: 'rgba(82, 199, 122, 0.05)',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    tension: 0.4
-                },
-                {
-                    label: 'Other',
-                    data: [50, 40, 50, 45, 60, 70, 65],
-                    borderColor: '#9b6dd0',
-                    backgroundColor: 'rgba(155, 109, 208, 0.05)',
-                    borderWidth: 2,
-                    pointRadius: 4,
-                    tension: 0.4
+                scales: {
+                    y: { beginAtZero: true }
                 }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: { beginAtZero: true }
             }
-        }
-    });
+        });
+    }
 
-    // Projected Revenue Chart
-    const projectedRevenueCtx = document.getElementById('projectedRevenueChart').getContext('2d');
-    projectedRevenueChart = new Chart(projectedRevenueCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Q1 2024', 'Q2 2025', 'Q1 2026'],
-            datasets: [{
-                label: 'Projected Revenue',
-                data: [950, 1100, 750],
-                backgroundColor: '#ff6b35',
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: false }
+    const projectedRevenueCanvas = document.getElementById('projectedRevenueChart');
+    if (projectedRevenueCanvas) {
+        const projectedRevenueCtx = projectedRevenueCanvas.getContext('2d');
+        projectedRevenueChart = new Chart(projectedRevenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Q1 2024', 'Q2 2025', 'Q1 2026'],
+                datasets: [{
+                    label: 'Projected Revenue',
+                    data: [950, 1100, 750],
+                    backgroundColor: '#ff6b35',
+                    borderRadius: 8
+                }]
             },
-            scales: {
-                y: { beginAtZero: true, ticks: { callback: function (value) { return '₱' + value + 'k'; } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: function (value) { return '₱' + value + 'k'; } } }
+                }
             }
-        }
-    });
+        });
+    }
 }
 
 // Populate Transactions Table
 function populateTransactionsTable() {
     const tbody = document.getElementById('transactionsTableBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     sampleData.transactions.forEach(transaction => {
@@ -300,11 +341,35 @@ function populateTransactionsTable() {
 }
 
 // Populate Inventory Table
-function populateInventoryTable() {
+function getFilteredInventoryItems() {
+    const term = inventorySearchTerm.trim().toLowerCase();
+    if (!term) return sampleData.inventory;
+
+    return sampleData.inventory.filter(item => {
+        return (
+            item.id.toLowerCase().includes(term) ||
+            item.name.toLowerCase().includes(term) ||
+            item.price.toString().includes(term) ||
+            item.stock.toString().includes(term)
+        );
+    });
+}
+
+function populateInventoryTable(page = 1) {
     const tbody = document.getElementById('inventoryTableBody');
+    const info = document.querySelector('.inventory-info');
+    const pagination = document.getElementById('inventoryPagination');
+    if (!tbody) return;
+
+    const items = getFilteredInventoryItems();
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / inventoryPageSize));
+    currentInventoryPage = Math.min(Math.max(1, page), totalPages);
+
+    const pageItems = items.slice((currentInventoryPage - 1) * inventoryPageSize, currentInventoryPage * inventoryPageSize);
     tbody.innerHTML = '';
 
-    sampleData.inventory.forEach(item => {
+    pageItems.forEach(item => {
         const stockClass = item.stock <= 5 ? 'low' : '';
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -321,11 +386,58 @@ function populateInventoryTable() {
         `;
         tbody.appendChild(row);
     });
+
+    if (info) {
+        info.textContent = `${totalItems} item${totalItems === 1 ? '' : 's'} · page ${currentInventoryPage} of ${totalPages}`;
+    }
+
+    if (pagination) {
+        renderInventoryPagination(totalPages);
+    }
+}
+
+function renderInventoryPagination(totalPages) {
+    const pagination = document.getElementById('inventoryPagination');
+    if (!pagination) return;
+    pagination.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    const createButton = (label, page, disabled = false) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = label;
+        button.dataset.page = page;
+        button.className = 'pagination-button';
+        if (disabled) {
+            button.disabled = true;
+            button.classList.add('disabled');
+        }
+        return button;
+    };
+
+    pagination.appendChild(createButton('← Previous', Math.max(1, currentInventoryPage - 1), currentInventoryPage === 1));
+
+    for (let page = 1; page <= totalPages; page++) {
+        const button = createButton(page, page, page === currentInventoryPage);
+        if (page === currentInventoryPage) {
+            button.classList.add('active');
+        }
+        pagination.appendChild(button);
+    }
+
+    pagination.appendChild(createButton('Next →', Math.min(totalPages, currentInventoryPage + 1), currentInventoryPage === totalPages));
+}
+
+function handleInventorySearch(event) {
+    inventorySearchTerm = event.target.value;
+    populateInventoryTable(1);
 }
 
 // Populate Mechanics Section
 function populateMechanicsSection() {
     const container = document.getElementById('mechanicsList');
+    if (!container) return;
     container.innerHTML = '';
 
     // Fetch mechanics from backend (requires admin JWT)
@@ -349,63 +461,74 @@ function populateMechanicsSection() {
             return res.json();
         })
         .then(data => {
-            const mechanics = data.mechanics || [];
-            if (mechanics.length === 0) {
+            const mechanics = (data && Array.isArray(data.mechanics)) ? data.mechanics : [];
+            const renderList = mechanics.length ? mechanics : sampleData.mechanics;
+
+            if (!renderList.length) {
                 container.innerHTML = '<p>No mechanics found.</p>';
                 return;
             }
 
-            mechanics.forEach(mechanic => {
-                const card = document.createElement('div');
-                card.className = 'mechanic-card';
-                const fullName = (mechanic.firstName || '') + ' ' + (mechanic.lastName || '');
-                card.innerHTML = `
-                    <div class="mechanic-header-row">
-                        <div class="mechanic-info">
-                            <div class="mechanic-avatar orange">${(mechanic.firstName||'')[0] || 'M'}</div>
-                            <div>
-                                <div class="mechanic-name">${fullName.trim()}</div>
-                                <div class="mechanic-specialty" style="color: #ff6b35;">${mechanic.specialization}</div>
-                                <div class="mechanic-email">📧 ${mechanic.email}</div>
-                            </div>
-                        </div>
-                        <div class="mechanic-actions">
-                            <button class="btn-small btn-edit" title="Edit">✏️</button>
-                            <button class="btn-small btn-delete" title="Delete">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="mechanic-stats">
-                        <div class="mechanic-stat">
-                            <div class="mechanic-stat-number">${mechanic.totalRepairs || 0}</div>
-                            <div class="mechanic-stat-label">Total Jobs</div>
-                        </div>
-                        <div class="mechanic-stat">
-                            <div class="mechanic-stat-number">${mechanic.averageRating || 0}</div>
-                            <div class="mechanic-stat-label">Average Rating</div>
-                        </div>
-                        <div class="mechanic-stat">
-                            <div class="mechanic-stat-number">${mechanic.isActive ? 0 : 0}</div>
-                            <div class="mechanic-stat-label">In Progress</div>
-                        </div>
-                        <div class="mechanic-stat">
-                            <div class="mechanic-stat-number">0</div>
-                            <div class="mechanic-stat-label">Pending</div>
-                        </div>
-                    </div>
-                    <div class="mechanic-labor">⭐ Total Labor Today <span style="float: right;">₱0</span></div>
-                `;
-                container.appendChild(card);
-            });
+            renderMechanicCards(renderList);
         })
         .catch(err => {
             console.error('Error fetching mechanics:', err);
-            container.innerHTML = '<p>Unable to load mechanics.</p>';
+            renderMechanicCards(sampleData.mechanics);
         });
+}
+
+function renderMechanicCards(mechanics) {
+    const container = document.getElementById('mechanicsList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    mechanics.forEach(mechanic => {
+        const card = document.createElement('div');
+        card.className = 'mechanic-card';
+        const fullName = (mechanic.firstName || '') + ' ' + (mechanic.lastName || '');
+        card.innerHTML = `
+            <div class="mechanic-header-row">
+                <div class="mechanic-info">
+                    <div class="mechanic-avatar orange">${(mechanic.firstName || '')[0] || 'M'}</div>
+                    <div>
+                        <div class="mechanic-name">${fullName.trim()}</div>
+                        <div class="mechanic-specialty" style="color: #ff6b35;">${mechanic.specialization || 'General Service'}</div>
+                        <div class="mechanic-email">📧 ${mechanic.email || 'not provided'}</div>
+                    </div>
+                </div>
+                <div class="mechanic-actions">
+                    <button class="btn-small btn-edit" title="Edit">✏️</button>
+                    <button class="btn-small btn-delete" title="Delete">🗑️</button>
+                </div>
+            </div>
+            <div class="mechanic-stats">
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.totalRepairs || 0}</div>
+                    <div class="mechanic-stat-label">Total Jobs</div>
+                </div>
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.averageRating || 0}</div>
+                    <div class="mechanic-stat-label">Average Rating</div>
+                </div>
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.isActive ? 'Active' : 'Idle'}</div>
+                    <div class="mechanic-stat-label">Status</div>
+                </div>
+                <div class="mechanic-stat">
+                    <div class="mechanic-stat-number">${mechanic.yearsOfExperience || 0}</div>
+                    <div class="mechanic-stat-label">Years Experience</div>
+                </div>
+            </div>
+            <div class="mechanic-labor">⭐ Total Labor Today <span style="float: right;">₱0</span></div>
+        `;
+        container.appendChild(card);
+    });
 }
 
 // Populate Users Table
 function populateUsersTable() {
     const tbody = document.getElementById('usersTableBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     sampleData.users.forEach(user => {
@@ -431,11 +554,14 @@ function populateUsersTable() {
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item:not(.logout)');
     const sections = document.querySelectorAll('.section-content');
+    if (!navItems.length || !sections.length) return;
 
     navItems.forEach(item => {
+        const sectionId = item.getAttribute('data-section');
+        if (!sectionId) return;
+
         item.addEventListener('click', function (e) {
             e.preventDefault();
-            const sectionId = this.getAttribute('data-section');
 
             // Remove active class from all items and sections
             navItems.forEach(nav => nav.classList.remove('active'));
@@ -448,10 +574,10 @@ function setupNavigation() {
             // Redraw charts if they're visible
             setTimeout(() => {
                 if (sectionId === 'dashboard') {
-                    quarterlySalesChart.resize();
-                    dailySalesChart.resize();
+                    quarterlySalesChart?.resize();
+                    dailySalesChart?.resize();
                 } else if (sectionId === 'analytics') {
-                    projectedRevenueChart.resize();
+                    projectedRevenueChart?.resize();
                 }
             }, 100);
         });
@@ -528,16 +654,14 @@ document.querySelector('.users-header input')?.addEventListener('input', functio
 });
 
 // Search functionality for inventory
-document.querySelector('.inventory-header input')?.addEventListener('input', function (e) {
-    const searchTerm = e.target.value.toLowerCase();
-    const rows = document.querySelectorAll('#inventoryTableBody tr');
+const inventorySearchInput = document.querySelector('.inventory-header input');
+inventorySearchInput?.addEventListener('input', handleInventorySearch);
 
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
+document.getElementById('inventoryPagination')?.addEventListener('click', function (event) {
+    const target = event.target;
+    if (target.tagName !== 'BUTTON' || !target.dataset.page) return;
+    const page = parseInt(target.dataset.page, 10);
+    if (!Number.isNaN(page)) {
+        populateInventoryTable(page);
+    }
 });
