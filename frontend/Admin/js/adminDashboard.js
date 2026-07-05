@@ -161,6 +161,18 @@ document.addEventListener('DOMContentLoaded', function () {
         setInterval(updateTimestamp, 60000);
     } else if (page === 'revenue') {
         initializeCharts();
+        // compute and display total revenue formatted
+        try {
+            const total = sampleData.transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+            const statEl = document.querySelector('.stat-value');
+            if (statEl) {
+                statEl.textContent = formatCurrency(total);
+            }
+            const riskText = document.querySelector('.risk-indicator');
+            if (riskText) {
+                riskText.textContent = '⚠️ High Risk';
+            }
+        } catch (e) { console.warn(e); }
         setupNavigation();
         updateTimestamp();
         setInterval(updateTimestamp, 60000);
@@ -183,6 +195,12 @@ function updateTimestamp() {
     const now = new Date();
     const options = { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
     document.getElementById('timestamp').textContent = now.toLocaleDateString('en-US', options) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+// Format integer to currency with thousands separator
+function formatCurrency(amount) {
+    if (amount === null || amount === undefined) return '₱0';
+    return '₱' + amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // Initialize charts
@@ -287,27 +305,60 @@ function initializeCharts() {
     const projectedRevenueCanvas = document.getElementById('projectedRevenueChart');
     if (projectedRevenueCanvas) {
         const projectedRevenueCtx = projectedRevenueCanvas.getContext('2d');
+        // create vertical gradient for bars
+        const barGradient = projectedRevenueCtx.createLinearGradient(0, 0, 0, 300);
+        barGradient.addColorStop(0, '#ff9a3b');
+        barGradient.addColorStop(1, '#f0491e');
+
         projectedRevenueChart = new Chart(projectedRevenueCtx, {
             type: 'bar',
             data: {
                 labels: ['Q1 2024', 'Q2 2025', 'Q1 2026'],
                 datasets: [{
                     label: 'Projected Revenue',
-                    data: [950, 1100, 750],
-                    backgroundColor: '#ff6b35',
+                    data: [90, 118, 75],
+                    backgroundColor: barGradient,
                     borderRadius: 8
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
+                animation: {
+                    duration: 900,
+                    easing: 'easeOutQuart'
+                },
                 plugins: {
                     legend: { display: false }
                 },
                 scales: {
                     y: { beginAtZero: true, ticks: { callback: function (value) { return '₱' + value + 'k'; } } }
                 }
-            }
+            },
+            plugins: [
+                {
+                    id: 'valueLabels',
+                    afterDatasetsDraw: function (chart) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach(function (dataset, i) {
+                            const meta = chart.getDatasetMeta(i);
+                            if (!meta.hidden) {
+                                meta.data.forEach(function (element, index) {
+                                    const value = dataset.data[index];
+                                    ctx.save();
+                                    ctx.fillStyle = '#6b2b1e';
+                                    ctx.font = '600 12px "Segoe UI", Tahoma, sans-serif';
+                                    ctx.textAlign = 'center';
+                                    const position = element.getCenterPoint ? element.getCenterPoint() : { x: element.x, y: element.y };
+                                    // draw label slightly above bar
+                                    ctx.fillText('₱' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + 'k', position.x, position.y - 10);
+                                    ctx.restore();
+                                });
+                            }
+                        });
+                    }
+                }
+            ]
         });
     }
 }
@@ -597,7 +648,12 @@ document.addEventListener('click', function (e) {
         if (section && section.id === 'inventory') {
             alert('Add new inventory item functionality would be implemented here');
         } else if (section && section.id === 'mechanics') {
-            alert('Add new mechanic functionality would be implemented here');
+            const modal = document.getElementById('addMechanicModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                const firstInput = modal.querySelector('input[name="firstName"]');
+                firstInput && firstInput.focus();
+            }
         } else if (section && section.id === 'products') {
             alert('Add new product functionality would be implemented here');
         }
@@ -665,3 +721,89 @@ document.getElementById('inventoryPagination')?.addEventListener('click', functi
         populateInventoryTable(page);
     }
 });
+
+// Add Mechanic modal handlers (attach after DOM is ready)
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('addMechanicModal');
+    const form = document.getElementById('addMechanicForm');
+    const cancel = document.getElementById('cancelAddMechanic');
+    const errorEl = document.getElementById('addMechanicError');
+
+    if (!modal || !form) return;
+
+    const hideModal = () => {
+        modal.style.display = 'none';
+        errorEl && (errorEl.style.display = 'none');
+        form.reset();
+    };
+
+    cancel && cancel.addEventListener('click', hideModal);
+
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) hideModal();
+    });
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = new FormData(form);
+        const payload = {
+            firstName: data.get('firstName')?.trim(),
+            lastName: data.get('lastName')?.trim(),
+            email: data.get('email')?.trim(),
+            phoneNumber: data.get('phoneNumber')?.trim(),
+            specialization: data.get('specialization')?.trim(),
+            yearsOfExperience: Number(data.get('yearsOfExperience')),
+            password: data.get('password'),
+            certifications: data.get('certifications') ? data.get('certifications').split(',').map(s=>s.trim()).filter(Boolean) : []
+        };
+
+        const adminToken = localStorage.getItem('adminToken');
+        if (!adminToken) {
+            window.location.href = 'adminLogin.html';
+            return;
+        }
+
+        fetch('/api/mechanics/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + adminToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(async res => {
+            const json = await res.json().catch(()=>({}));
+            if (!res.ok) {
+                const msg = json && json.message ? json.message : 'Failed to create mechanic';
+                throw new Error(msg);
+            }
+            return json;
+        })
+        .then(result => {
+            hideModal();
+            populateMechanicsSection();
+            alert(result.message || 'Mechanic created');
+        })
+        .catch(err => {
+            if (errorEl) {
+                errorEl.textContent = err.message || 'Failed to create mechanic';
+                errorEl.style.display = 'block';
+            } else {
+                alert(err.message || 'Failed to create mechanic');
+            }
+        });
+    });
+});
+
+// Fallback: direct button handler if section id is not present
+(() => {
+    const btn = document.getElementById('addMechanicBtn');
+    const modal = document.getElementById('addMechanicModal');
+    if (!btn || !modal) return;
+    btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        modal.style.display = 'flex';
+        const firstInput = modal.querySelector('input[name="firstName"]');
+        firstInput && firstInput.focus();
+    });
+})();

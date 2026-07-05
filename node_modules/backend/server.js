@@ -11,6 +11,7 @@ const dashboardRoutes = require('./routes/adminRoutes/dashboard');
 const cartRoutes = require('./routes/orderingRoutes/cart');
 const orderRoutes = require('./routes/orderingRoutes/order');
 const serviceRequestRoutes = require('./routes/serviceRequest');
+const mechanicPartsRoutes = require('./routes/mechanicParts');
 
 
 const mongoose = require('mongoose');
@@ -20,6 +21,11 @@ const path = require('path');
 
 // Middleware
 app.use(cors());
+// simple request logger for debugging
+app.use((req, res, next) => {
+  console.log(new Date().toISOString(), req.method, req.path);
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // serve uploaded files
@@ -67,6 +73,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
+app.use('/api/mechanic', mechanicPartsRoutes);
 
 // Catch-all for frontend routes (serve admin login for non-API requests)
 app.use((req, res, next) => {

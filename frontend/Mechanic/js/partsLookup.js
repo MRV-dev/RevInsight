@@ -116,10 +116,14 @@ function displayParts(parts) {
     noResults.style.display = 'none';
     
     tbody.innerHTML = parts.map(part => {
+        const imageUrl = part.image ? part.image : '';
         return `
             <tr>
                 <td><span class="part-id">${part.itemId}</span></td>
+                <td class="part-image">${imageUrl ? `<img src="${imageUrl}" alt="${part.name}" style="height:36px;border-radius:6px;">` : ''}</td>
                 <td><span class="part-name">${part.name}</span></td>
+                <td><span class="part-category">${part.category || '-'}</span></td>
+                <td><span class="part-price">${part.price ? '₱' + part.price : '-'}</span></td>
                 <td>
                     <span class="quantity">${part.stock}</span>
                 </td>

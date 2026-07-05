@@ -96,7 +96,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Signing in...';
     
     try {
-        const response = await fetch('http://localhost:5000/api/mechanic/login', {
+        const response = await fetch('http://localhost:5000/api/mechanics/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

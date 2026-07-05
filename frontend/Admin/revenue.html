@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revenue Concentration Risk - Admin</title>
     <link rel="stylesheet" href="css/adminDashboard.css">
+    <link rel="stylesheet" href="css/revenue.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 <body data-page="revenue">
@@ -50,8 +51,10 @@
                             <button class="btn-clear">Clear</button>
                         </div>
                         <p class="ai-intro">Hello! I'm your AI revenue analyst. Ask me about your revenue trends, risk levels, or category performance.</p>
-                        <input type="text" class="ai-input" placeholder="Ask about revenue...">
-                        <button class="btn-send">📤</button>
+                        <div class="ai-input-row">
+                            <input type="text" class="ai-input" placeholder="Ask about revenue...">
+                            <button class="btn-send">📤</button>
+                        </div>
                     </div>
                     <div class="chart-card full-width">
                         <h3>PROJECTED REVENUE TREND</h3>
