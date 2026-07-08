@@ -39,6 +39,23 @@
 - Develop Login and Registration pages
 - Implement Authentication and User Roles
 
+---
+
+## Environment Setup
+
+Create a `backend/.env` file with the following values:
+
+```
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/revinsight-ai
+JWT_SECRET=revinsight-secret-key
+EMAIL_SERVICE=Gmail
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-email-password
+```
+
+For Gmail, use an app-specific password if two-factor authentication is enabled.
+
 #### Member B
 - Create Use Case Diagram
 - Create Context Diagram

@@ -141,6 +141,27 @@ const sampleData = {
 // Chart instances
 let quarterlySalesChart, dailySalesChart, projectedRevenueChart;
 
+// Notifications store (empty by default)
+let notifications = [];
+
+// Ensure the correct sidebar item is marked active based on the page
+function markActiveNavFromBody() {
+    const page = document.body.dataset.page;
+    if (!page) return;
+    const mapping = {
+        dashboard: 'adminDashboard.html',
+        revenue: 'revenue.html',
+        transactions: 'transactions.html',
+        inventory: 'inventory.html',
+        mechanics: 'mechanics.html'
+    };
+    const href = mapping[page];
+    if (!href) return;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const el = document.querySelector(`.nav-item[href="${href}"]`);
+    if (el) el.classList.add('active');
+}
+
 // Inventory pagination state
 const inventoryPageSize = 8;
 let currentInventoryPage = 1;
@@ -149,6 +170,10 @@ let inventorySearchTerm = '';
 // Initialize dashboard or section page
 document.addEventListener('DOMContentLoaded', function () {
     const page = document.body.dataset.page || 'dashboard';
+    // Ensure sidebar reflects current page
+    markActiveNavFromBody();
+    // Setup notification dropdown behavior
+    setupNotifications();
 
     if (page === 'dashboard') {
         initializeCharts();
@@ -157,8 +182,6 @@ document.addEventListener('DOMContentLoaded', function () {
         populateMechanicsSection();
         populateUsersTable();
         setupNavigation();
-        updateTimestamp();
-        setInterval(updateTimestamp, 60000);
     } else if (page === 'revenue') {
         initializeCharts();
         // compute and display total revenue formatted
@@ -174,8 +197,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (e) { console.warn(e); }
         setupNavigation();
-        updateTimestamp();
-        setInterval(updateTimestamp, 60000);
     } else if (page === 'transactions') {
         populateTransactionsTable();
         setupNavigation();
@@ -188,13 +209,88 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         setupNavigation();
     }
+    // Ensure timestamp is visible and kept updated on every page
+    updateTimestamp();
+    setInterval(updateTimestamp, 60000);
 });
 
-// Update timestamp
+// Update timestamp (show date and time on one line)
 function updateTimestamp() {
     const now = new Date();
-    const options = { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    document.getElementById('timestamp').textContent = now.toLocaleDateString('en-US', options) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const date = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const el = document.getElementById('timestamp');
+    if (el) el.textContent = `${date} ${time}`;
+}
+
+// Notification dropdown handling
+function setupNotifications() {
+    const bell = document.querySelector('.notification-icon');
+    if (!bell) return;
+
+    // create dropdown container
+    let dropdown = document.createElement('div');
+    dropdown.className = 'notifications-dropdown';
+    dropdown.style.display = 'none';
+    dropdown.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(dropdown);
+
+    function renderDropdown() {
+        dropdown.innerHTML = '';
+        if (!notifications || notifications.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'notification-empty';
+            empty.textContent = 'No notifications found';
+            dropdown.appendChild(empty);
+            return;
+        }
+        const list = document.createElement('div');
+        list.className = 'notification-list';
+        notifications.forEach(n => {
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.textContent = n.text || 'Notification';
+            list.appendChild(item);
+        });
+        dropdown.appendChild(list);
+    }
+
+    function positionDropdown() {
+        const rect = bell.getBoundingClientRect();
+        dropdown.style.position = 'absolute';
+        dropdown.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+        dropdown.style.left = (rect.left + window.scrollX - 200 + rect.width) + 'px';
+        dropdown.style.minWidth = '260px';
+    }
+
+    function showDropdown() {
+        renderDropdown();
+        positionDropdown();
+        dropdown.style.display = 'block';
+        dropdown.setAttribute('aria-hidden', 'false');
+        document.addEventListener('click', onDocClick);
+    }
+
+    function hideDropdown() {
+        dropdown.style.display = 'none';
+        dropdown.setAttribute('aria-hidden', 'true');
+        document.removeEventListener('click', onDocClick);
+    }
+
+    function onDocClick(e) {
+        if (!dropdown.contains(e.target) && !bell.contains(e.target)) {
+            hideDropdown();
+        }
+    }
+
+    bell.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (dropdown.style.display === 'block') hideDropdown(); else showDropdown();
+    });
+
+    // reposition on resize/scroll
+    window.addEventListener('resize', () => { if (dropdown.style.display === 'block') positionDropdown(); });
+    window.addEventListener('scroll', () => { if (dropdown.style.display === 'block') positionDropdown(); });
 }
 
 // Format integer to currency with thousands separator

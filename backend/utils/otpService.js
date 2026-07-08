@@ -1,13 +1,30 @@
 const nodemailer = require('nodemailer');
 
-// Create email transporter
-const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
+const getEmailConfig = () => {
+  const emailService = process.env.EMAIL_SERVICE;
+  const emailUser = process.env.EMAIL_USER;
+  const emailPassword = process.env.EMAIL_PASSWORD;
+
+  if (!emailService || !emailUser || !emailPassword) {
+    throw new Error(
+      'Email service is not configured. Set EMAIL_SERVICE, EMAIL_USER, and EMAIL_PASSWORD in backend/.env.'
+    );
   }
-});
+
+  return { emailService, emailUser, emailPassword };
+};
+
+const createTransporter = () => {
+  const { emailService, emailUser, emailPassword } = getEmailConfig();
+
+  return nodemailer.createTransport({
+    service: emailService,
+    auth: {
+      user: emailUser,
+      pass: emailPassword
+    }
+  });
+};
 
 // Generate random 6-digit OTP
 const generateOTP = () => {
@@ -22,8 +39,11 @@ const getOTPExpiry = () => {
 // Send OTP via email
 const sendOTPEmail = async (email, otp) => {
   try {
+    const transporter = createTransporter();
+    const { emailUser } = getEmailConfig();
+
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: emailUser,
       to: email,
       subject: 'RevInsight - Email Verification OTP',
       html: `
@@ -45,7 +65,10 @@ const sendOTPEmail = async (email, otp) => {
     return true;
   } catch (error) {
     console.error('Error sending OTP email:', error);
-    throw new Error('Failed to send OTP email');
+    if (error.message.includes('Email service is not configured')) {
+      throw error;
+    }
+    throw new Error('Failed to send OTP email. Verify SMTP credentials and service settings in backend/.env.');
   }
 };
 
