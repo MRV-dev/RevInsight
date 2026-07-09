@@ -169,10 +169,77 @@ const listAllMechanics = async (req, res) => {
   }
 };
 
+// Delete mechanic (admin)
+const deleteMechanic = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('[deleteMechanic] id=', id, 'params=', req.params, 'body=', req.body);
+    const mechanic = await Mechanic.findById(id);
+    if (!mechanic) {
+      console.log('[deleteMechanic] not found id=', id);
+      return res.status(404).json({ message: 'Mechanic not found' });
+    }
+
+    await Mechanic.findByIdAndDelete(id);
+    console.log('[deleteMechanic] deleted id=', id);
+
+    res.status(200).json({ message: 'Mechanic deleted successfully' });
+  } catch (error) {
+    console.error('[deleteMechanic] error', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Admin: update mechanic by id
+const updateMechanic = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, phoneNumber, specialization, yearsOfExperience, certifications, password } = req.body;
+
+    const mechanic = await Mechanic.findById(id);
+    if (!mechanic) {
+      return res.status(404).json({ message: 'Mechanic not found' });
+    }
+
+    // Prepare update fields
+    const update = {
+      firstName: firstName !== undefined ? firstName : mechanic.firstName,
+      lastName: lastName !== undefined ? lastName : mechanic.lastName,
+      phoneNumber: phoneNumber !== undefined ? phoneNumber : mechanic.phoneNumber,
+      specialization: specialization !== undefined ? specialization : mechanic.specialization,
+      yearsOfExperience: yearsOfExperience !== undefined ? yearsOfExperience : mechanic.yearsOfExperience,
+      certifications: certifications !== undefined ? certifications : mechanic.certifications
+    };
+
+    // If admin supplied a new password, hash it
+    if (password) {
+      if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
+      const hashed = await bcrypt.hash(password, 10);
+      update.password = hashed;
+    }
+
+    const updated = await Mechanic.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+
+    res.status(200).json({ message: 'Mechanic updated successfully', mechanic: {
+      id: updated._id,
+      firstName: updated.firstName,
+      lastName: updated.lastName,
+      email: updated.email,
+      specialization: updated.specialization,
+      yearsOfExperience: updated.yearsOfExperience,
+      certifications: updated.certifications
+    }});
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createMechanic,
   login,
   getProfile,
   updateProfile,
-  listAllMechanics
+  listAllMechanics,
+  deleteMechanic,
+  updateMechanic
 };

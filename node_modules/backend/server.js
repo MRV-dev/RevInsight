@@ -28,6 +28,20 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// additional API request logger (prints headers + body for POST/PUT/DELETE)
+app.use((req, res, next) => {
+  try {
+    if (req.path.startsWith('/api/')) {
+      console.log('-> API Request:', req.method, req.path);
+      console.log('   Host:', req.headers.host);
+      // avoid noisy output for GETs
+      if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+        console.log('   Body:', JSON.stringify(req.body));
+      }
+    }
+  } catch (e) { /* ignore logging errors */ }
+  next();
+});
 // serve uploaded files
 app.use(express.static('uploads'));
 
@@ -75,6 +89,30 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/mechanic', mechanicPartsRoutes);
 
+// Diagnostic: list registered routes (temporary)
+app.get('/api/_routes', (req, res) => {
+  try {
+    const routes = [];
+    app._router.stack.forEach(m => {
+      if (m.route && m.route.path) {
+        const methods = Object.keys(m.route.methods).join(',').toUpperCase();
+        routes.push({ path: m.route.path, methods });
+      } else if (m.name === 'router' && m.handle && m.handle.stack) {
+        m.handle.stack.forEach(r => {
+          if (r.route && r.route.path) {
+            const methods = Object.keys(r.route.methods).join(',').toUpperCase();
+            // If route was mounted with a path, include parent mount if available
+            routes.push({ path: r.route.path, methods });
+          }
+        });
+      }
+    });
+    res.json({ routes });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Catch-all for frontend routes (serve admin login for non-API requests)
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
@@ -83,4 +121,38 @@ app.use((req, res, next) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  // Print mounted routes for easier debugging of running instance
+  try {
+    console.log('Registered routes (mounted):');
+    if (app && app._router && Array.isArray(app._router.stack)) {
+      app._router.stack.forEach(m => {
+        try {
+          if (m && m.route && m.route.path) {
+            const methods = Object.keys(m.route.methods).join(',').toUpperCase();
+            console.log(methods.padEnd(8), m.route.path);
+            return;
+          }
+
+          // Mounted routers can expose their own stack under handle.stack
+          const handleStack = m && m.handle && m.handle.stack;
+          if (Array.isArray(handleStack)) {
+            const mount = (m && m.regexp && m.regexp.source) ? m.regexp.source : '<router>';
+            handleStack.forEach(r => {
+              if (r && r.route && r.route.path) {
+                const methods = Object.keys(r.route.methods).join(',').toUpperCase();
+                console.log(methods.padEnd(8), `${mount} -> ${r.route.path}`);
+              }
+            });
+            return;
+          }
+        } catch (innerE) {
+          // ignore individual layer errors
+        }
+      });
+    } else {
+      console.log('No router stack available to print.');
+    }
+  } catch (e) {
+    console.error('Error printing routes:', e && e.stack ? e.stack : e);
+  }
 });

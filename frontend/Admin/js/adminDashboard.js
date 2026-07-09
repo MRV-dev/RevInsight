@@ -144,6 +144,9 @@ let quarterlySalesChart, dailySalesChart, projectedRevenueChart;
 // Notifications store (empty by default)
 let notifications = [];
 
+// Edit mode state: when set to mechanic id, form submits update instead of create
+let editMechanicId = null;
+
 // Ensure the correct sidebar item is marked active based on the page
 function markActiveNavFromBody() {
     const page = document.body.dataset.page;
@@ -644,8 +647,8 @@ function renderMechanicCards(mechanics) {
                     </div>
                 </div>
                 <div class="mechanic-actions">
-                    <button class="btn-small btn-edit" title="Edit">✏️</button>
-                    <button class="btn-small btn-delete" title="Delete">🗑️</button>
+                    <button class="btn-small btn-edit" title="Edit" aria-label="Edit mechanic">✏️ Edit</button>
+                    <button class="btn-small btn-delete" title="Delete" aria-label="Delete mechanic" style="color:#d32f2f; font-weight:600;">🗑️ Delete</button>
                 </div>
             </div>
             <div class="mechanic-stats">
@@ -669,6 +672,86 @@ function renderMechanicCards(mechanics) {
             <div class="mechanic-labor">⭐ Total Labor Today <span style="float: right;">₱0</span></div>
         `;
         container.appendChild(card);
+
+        // Attach edit and delete handlers for mechanic card (admin actions)
+        const editBtn = card.querySelector('.btn-edit');
+        if (editBtn) {
+            editBtn.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                ev.preventDefault();
+                // open modal in edit mode
+                const modal = document.getElementById('addMechanicModal');
+                const form = document.getElementById('addMechanicForm');
+                const title = modal && modal.querySelector('h3');
+                const submitBtn = modal && modal.querySelector('button[type="submit"]');
+                if (!modal || !form) return;
+                // fill form fields
+                form.querySelector('input[name="firstName"]').value = mechanic.firstName || '';
+                form.querySelector('input[name="lastName"]').value = mechanic.lastName || '';
+                form.querySelector('input[name="email"]').value = mechanic.email || '';
+                form.querySelector('input[name="phoneNumber"]').value = mechanic.phoneNumber || '';
+                form.querySelector('select[name="specialization"]').value = mechanic.specialization || '';
+                form.querySelector('input[name="yearsOfExperience"]').value = mechanic.yearsOfExperience || '';
+                form.querySelector('input[name="password"]').value = '';
+                form.querySelector('input[name="certifications"]').value = (mechanic.certifications && mechanic.certifications.join(', ')) || '';
+                editMechanicId = mechanic.id || mechanic._id;
+                if (title) title.textContent = 'Edit Mechanic';
+                if (submitBtn) submitBtn.textContent = 'Save';
+                modal.style.display = 'flex';
+            });
+        }
+
+        const deleteBtn = card.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', function (ev) {
+                ev.stopPropagation();
+                ev.preventDefault();
+                if (!confirm('Are you sure you want to delete this mechanic?')) return;
+                const mechId = mechanic.id || mechanic._id;
+                const adminToken = localStorage.getItem('adminToken');
+                if (!adminToken) {
+                    window.location.href = 'adminLogin.html';
+                    return;
+                }
+
+                if (!mechId) {
+                    alert('Mechanic id is missing; cannot delete.');
+                    return;
+                }
+
+                (async () => {
+                    const body = JSON.stringify({ id: mechId });
+                    const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken };
+
+                    async function doPost(url) {
+                        const res = await fetch(url, { method: 'POST', headers, body });
+                        const text = await res.text().catch(() => '');
+                        let json = {};
+                        try { json = text ? JSON.parse(text) : {}; } catch (e) { json = { message: text }; }
+                        return { res, json };
+                    }
+
+                    try {
+                        let { res, json } = await doPost('/api/admin/mechanics/delete');
+                        // If admin-scoped endpoint isn't present on the running server, try the mechanics endpoint fallback
+                        if (res.status === 404) {
+                            ({ res, json } = await doPost('/api/mechanics/delete'));
+                        }
+
+                        if (!res.ok) {
+                            console.error('Delete mechanic failed', res.status, json);
+                            throw new Error((json && json.message) ? json.message + ' (status ' + res.status + ')' : 'Failed to delete mechanic (status ' + res.status + ')');
+                        }
+
+                        alert(json.message || 'Mechanic deleted');
+                        populateMechanicsSection();
+                    } catch (err) {
+                        console.error('Delete error:', err);
+                        alert(err.message || 'Failed to delete mechanic');
+                    }
+                })();
+            });
+        }
     });
 }
 
@@ -831,6 +914,12 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.style.display = 'none';
         errorEl && (errorEl.style.display = 'none');
         form.reset();
+        // reset edit mode state
+        editMechanicId = null;
+        const title = modal.querySelector('h3');
+        if (title) title.textContent = 'Add Mechanic';
+        const submitBtn = modal.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Create';
     };
 
     cancel && cancel.addEventListener('click', hideModal);
@@ -859,35 +948,84 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch('/api/mechanics/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + adminToken
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(async res => {
-            const json = await res.json().catch(()=>({}));
-            if (!res.ok) {
-                const msg = json && json.message ? json.message : 'Failed to create mechanic';
-                throw new Error(msg);
-            }
-            return json;
-        })
-        .then(result => {
-            hideModal();
-            populateMechanicsSection();
-            alert(result.message || 'Mechanic created');
-        })
-        .catch(err => {
-            if (errorEl) {
-                errorEl.textContent = err.message || 'Failed to create mechanic';
-                errorEl.style.display = 'block';
-            } else {
-                alert(err.message || 'Failed to create mechanic');
-            }
-        });
+        // If we're in edit mode, call update endpoint; otherwise create
+        if (editMechanicId) {
+            const updatePayload = {
+                firstName: payload.firstName,
+                lastName: payload.lastName,
+                phoneNumber: payload.phoneNumber,
+                specialization: payload.specialization,
+                yearsOfExperience: payload.yearsOfExperience,
+                certifications: payload.certifications
+            };
+            if (payload.password) updatePayload.password = payload.password;
+
+            fetch('/api/mechanics/' + editMechanicId, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + adminToken
+                },
+                body: JSON.stringify(updatePayload)
+            })
+            .then(async res => {
+                const json = await res.json().catch(()=>({}));
+                if (!res.ok) {
+                    const msg = json && json.message ? json.message : 'Failed to update mechanic';
+                    throw new Error(msg);
+                }
+                return json;
+            })
+            .then(result => {
+                editMechanicId = null;
+                // reset modal title/submit text
+                const title = modal.querySelector('h3');
+                if (title) title.textContent = 'Add Mechanic';
+                const submitBtn = modal.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.textContent = 'Create';
+                hideModal();
+                populateMechanicsSection();
+                alert(result.message || 'Mechanic updated');
+            })
+            .catch(err => {
+                if (errorEl) {
+                    errorEl.textContent = err.message || 'Failed to update mechanic';
+                    errorEl.style.display = 'block';
+                } else {
+                    alert(err.message || 'Failed to update mechanic');
+                }
+            });
+        } else {
+            fetch('/api/mechanics/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + adminToken
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async res => {
+                const json = await res.json().catch(()=>({}));
+                if (!res.ok) {
+                    const msg = json && json.message ? json.message : 'Failed to create mechanic';
+                    throw new Error(msg);
+                }
+                return json;
+            })
+            .then(result => {
+                hideModal();
+                populateMechanicsSection();
+                alert(result.message || 'Mechanic created');
+            })
+            .catch(err => {
+                if (errorEl) {
+                    errorEl.textContent = err.message || 'Failed to create mechanic';
+                    errorEl.style.display = 'block';
+                } else {
+                    alert(err.message || 'Failed to create mechanic');
+                }
+            });
+        }
     });
 });
 

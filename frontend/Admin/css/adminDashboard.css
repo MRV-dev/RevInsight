@@ -111,13 +111,16 @@ body {
     flex: 1;
     margin-left: 200px; /* match sidebar width */
     background-color: #f5e6d3;
-    height: calc(100vh - 100px); /* leave space for header */
+    height: 100vh; /* leave space for header */
     overflow: auto; /* allow scrolling for long content */
     padding-bottom: 20px;
 }
 
 /* Header */
 .admin-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     background: linear-gradient(135deg, #ff6b35 0%, #f0491e 100%);
     color: white;
     padding: 24px 40px;
@@ -126,7 +129,10 @@ body {
     align-items: center;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     height: 100px;
-    border-radius: 0 12px 12px 0;
+    border-radius: 12px;
+    width: 97%;
+    margin-left: 20px;
+
 }
 
 .header-brand h1 {
@@ -706,7 +712,7 @@ body {
 
 /* Mechanics Section */
 .mechanics-container {
-    background: white;
+    background: rgb(255, 255, 255);
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
