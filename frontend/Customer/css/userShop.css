@@ -1,0 +1,258 @@
+body{
+  margin: 0;
+  padding: 0;
+}
+
+
+nav{
+  width: 100%;
+  height: 10vh;
+  margin: 0;
+  padding: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+nav ul{
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+nav li{
+  padding: 11px 14px;
+  margin: 0px;
+}
+li button{
+  background: linear-gradient(to right, #ff842b, #ff6a00); 
+  color: white  ;
+  border: none;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  padding: 13px 33px;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 15px;
+}
+nav li.nav-links{
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-left: 60px;
+}
+.Logout{
+  text-decoration: none;
+  line-height: 50px;
+  font-family: sans-serif;
+  font-size: 15px;
+  font-weight: 300;
+  margin-right: 45px;
+  color: #464645;
+}
+
+
+.Logo{
+  display: flex;
+  gap: 7px;
+  margin-left: 20px;
+}
+.Logo h2{
+  line-height: 10px;
+  font-size: 17px;
+  font-family: sans-serif;
+  margin-left: 45px;
+  margin-bottom: -7px;
+}
+.Logo p{
+  line-height: 45px;
+  margin-left: -80px;
+  font-weight: bold;
+  font-family: sans-serif;
+  color: rgb(255, 106, 0);
+  font-size: 13px;
+}
+.Logo img{
+  margin-top: 4px;
+  height: 40px;
+  width: 24%;
+  object-fit: cover;
+  border-radius: 30%;
+  margin-right: -10px;
+}
+
+
+li .bi-bell, li .bi-cart{
+  color: #464645;
+  font-size: 23px;
+  font-weight: bolder;
+  line-height: 50px;
+  margin-right: 16px;
+}
+
+.fa-user{
+  color: rgb(255, 106, 0);
+  margin-right: 4px;
+}
+.user-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.user-toggle {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.user-toggle h4 {
+  margin: 16px 34px;
+}
+
+.user-dropdown {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 150px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 4px;
+  top: 100%;
+  right: 0;
+  margin-top: -34px;
+}
+.user-dropdown.active {
+  display: block;
+}
+
+.user-dropdown a {
+  color: #333;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+  font-family: sans-serif;
+  font-size: 14px;
+}
+
+.user-dropdown a:hover {
+  background-color: #f0f0f0;
+}
+
+.user-dropdown a:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.user-dropdown a:last-child {
+  border-radius: 0 0 4px 4px;
+}
+
+
+li h4{
+  margin-top: 16px;
+  margin-right: 34px;
+}
+li a{
+  text-decoration: none;
+}
+
+.hero-content{
+  background: linear-gradient(135deg, #3f1b01, #3f1b01, #4d2101,#863a04, #833802, #522200, #311500);
+  border-radius: 34px;
+  width: 92.4%;
+  padding: 30px;
+  margin-left: 30px;
+  margin-top: 20px;
+}
+.hero-content p{
+  color: rgb(225, 191, 143);
+  font-family: sans-serif;
+}
+.hero-content h4{
+  font-family: sans-serif;
+  font-weight: bold;
+  color: rgb(252, 138, 57);
+}
+.hero-content h1{
+  font-family: sans-serif;
+  font-weight: bolder;
+  color: #fff;
+}
+.hero-content ul{
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+.hero-content li{
+  background: #964002;
+  color: white;
+  padding: 10px 23px;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+
+.search-container {
+  position: relative;
+  width: 94%;
+  margin-left: 30px;
+  margin-top: 40px;
+  display: flex;
+}
+.search-container i {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+}
+.form-control {
+  width: 100%;
+  height: 36px;
+  padding: 10px 12px 8px 42px; 
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  font-size: 15px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  outline: none;
+  border-width: 2px
+}
+.form-control:active, .form-control:focus{
+  border-color: #ff6a00;
+  outline: none;
+}
+.filter-dropdown{
+  position: relative;
+  left: 30px;
+  border: none;
+  outline: none;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  width: 17%;
+}
+
+.products{
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: 30px; 
+  margin-top: 30px;
+  width: 90vw;
+  height: 100vh;
+  gap: 20px;
+}
+.product-image{
+  height: 30px;
+  width: 30px;
+}
+.product-card{
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  width: 290px;
+  height: 200px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+ 
+}
