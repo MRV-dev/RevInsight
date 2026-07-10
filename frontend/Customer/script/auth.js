@@ -43,15 +43,21 @@ if (signInForm) {
     }
 
     try {
-      const response = await fetch(`${apiBase}/login`, {
+      const backendBase = 'http://localhost:5000';
+      const response = await fetch(`${backendBase}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (e) {
+        throw new Error(`Login response is not valid JSON: ${text}`);
+      }
+
       if (!response.ok) {
-        showMessage(signInMessage, data.message || 'Login failed.');
+        showMessage(signInMessage, data.message || `Login failed. (${response.status})`);
         return;
       }
 
@@ -62,7 +68,7 @@ if (signInForm) {
         window.location.href = 'userShop.html';
       }, 1000);
     } catch (error) {
-      showMessage(signInMessage, 'Unable to login. Please try again.');
+      showMessage(signInMessage, error.message || 'Unable to login. Please try again.');
       console.error('Customer login error:', error);
     }
   });

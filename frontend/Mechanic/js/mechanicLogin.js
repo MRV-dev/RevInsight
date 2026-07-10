@@ -96,35 +96,42 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     submitBtn.textContent = 'Signing in...';
     
     try {
-        const response = await fetch('http://localhost:5000/api/mechanics/login', {
+        const apiBase = 'http://localhost:5000';
+        const response = await fetch(`${apiBase}/api/mechanics/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, password })
         });
-        
-        const data = await response.json();
-        
+
+        const text = await response.text();
+        let data = {};
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+            throw new Error(`Login response is not valid JSON: ${text}`);
+        }
+
         if (response.ok && data.token) {
             // Store token and mechanic data
             localStorage.setItem('mechanicToken', data.token);
             localStorage.setItem('mechanic', JSON.stringify(data.mechanic));
-            
+
             showSuccess('Login successful! Redirecting...');
-            
+
             // Redirect to dashboard after 1.5 seconds
             setTimeout(() => {
                 window.location.href = 'mechanicDashboard.html';
             }, 1500);
         } else {
-            showError(data.message || 'Login failed. Please check your credentials.');
+            showError(data.message || `Login failed. (${response.status})`);
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
         }
     } catch (error) {
         console.error('Error:', error);
-        showError('An error occurred. Please check your connection and try again.');
+        showError(error.message || 'An error occurred. Please check your connection and try again.');
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
