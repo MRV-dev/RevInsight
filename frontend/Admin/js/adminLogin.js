@@ -21,15 +21,23 @@ document.addEventListener('DOMContentLoaded', function () {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Logging in...';
 
-        // Call backend API
-        fetch('/api/admin/login', {
+        // Call backend API via explicit backend origin so Live Server or other hosts still work
+        const apiBase = 'http://localhost:5000';
+        fetch(`${apiBase}/api/admin/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: email, password })
         })
         .then(async res => {
-            const body = await res.json();
-            if (!res.ok) throw new Error(body.message || 'Login failed');
+            const text = await res.text();
+            let body = {};
+            try {
+                body = text ? JSON.parse(text) : {};
+            } catch (parseError) {
+                throw new Error(`Login response is not valid JSON: ${text}`);
+            }
+
+            if (!res.ok) throw new Error(body.message || `Login failed (${res.status})`);
 
             // Save admin token and email
             if (rememberMe) {
